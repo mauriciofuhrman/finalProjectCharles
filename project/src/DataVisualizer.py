@@ -41,4 +41,50 @@ class DataVisualizer:
 
         plt.show()
 
+    def plot_quality_of_life_comparison(self):
+        """
+        Plot a comparison of different Quality of Life metrics for each state.
+        """
+        quality_data = self.data_processor.state_data[['state', 'QualityOfLifeTotalScore', 'QualityOfLifeAffordability', 'QualityOfLifeEconomy', 'QualityOfLifeEducationAndHealth', 'QualityOfLifeSafety']].copy()
+        quality_data.set_index('state', inplace=True)
+        quality_data.sort_values('QualityOfLifeTotalScore', ascending=False, inplace=True)
+        
+        # Normalizing the data for comparison
+        quality_normalized = (quality_data - quality_data.min()) / (quality_data.max() - quality_data.min())
+
+        quality_normalized.plot(kind='bar', stacked=True, figsize=(15, 8))
+        plt.xlabel('State')
+        plt.ylabel('Normalized Quality of Life Scores')
+        plt.title('Comparative Quality of Life Scores by State')
+        plt.legend(title='Metrics')
+        plt.tight_layout()
+        plt.show()
+
+    def plot_correlation_unemployment_quality(self):
+        """
+        Plot the correlation between unemployment rates and Quality of Life scores.
+        """
+        unemployment_rates = [self.data_processor.calculate_weighted_unemployment_rate(abbr) for abbr in self.data_processor.state_abbrev_mapping]
+        quality_of_life_scores = self.data_processor.state_data['QualityOfLifeTotalScore'].tolist()
+        
+        paired_data = [(rate, score) for rate, score in zip(unemployment_rates, quality_of_life_scores) if rate is not None]
+        
+        unemployment_rates, quality_of_life_scores = zip(*paired_data)
+        
+        correlation_data = pd.DataFrame({
+            'UnemploymentRate': unemployment_rates,
+            'QualityOfLifeScore': quality_of_life_scores
+        })
+        
+        plt.figure(figsize=(10, 6))
+        plt.scatter(correlation_data['UnemploymentRate'], correlation_data['QualityOfLifeScore'])
+        plt.xlabel('Weighted Unemployment Rate (%)')
+        plt.ylabel('Quality of Life Total Score')
+        plt.title('Correlation between Unemployment Rate and Quality of Life Score')
+        plt.tight_layout()
+        plt.show()
+
+
+
+
 

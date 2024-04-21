@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import plotly.express as px
 
 class DataVisualizer:
     """
@@ -17,15 +16,15 @@ class DataVisualizer:
 
     def plot_unemployment_rates(self):
         """
-        Plots the unemployment rates using matplotlib.
+        Plot unemployment rate as bar chart for each state.
         """
         state_data = pd.DataFrame([
             {'State': abbr, 'Rate': self.data_processor.calculate_weighted_unemployment_rate(abbr)}
             for abbr in self.data_processor.state_abbrev_mapping
         ])
+
         state_data.sort_values('Rate', ascending=False, inplace=True)
 
-       
         plt.figure(figsize=(12, 8))
         colors = plt.cm.viridis(state_data['Rate'] / state_data['Rate'].max())
         bars = plt.bar(state_data['State'], state_data['Rate'], color=colors)

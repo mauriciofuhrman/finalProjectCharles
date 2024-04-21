@@ -41,6 +41,15 @@ class QOLAnalysis:
         """
         self.state_data = pd.read_csv(self.state_data_path)
         self.county_data = pd.read_csv(self.county_data_path)
+    
+        if self.county_data['Unemployment'].isnull().any():
+            self.county_data['Unemployment'].fillna(self.county_data['Unemployment'].mean(), inplace=True)  
+
+        if '2022 Population' in self.county_data.columns:
+            self.county_data['2022 Population'].replace(',', '', regex=True, inplace=True)
+            self.county_data['2022 Population'] = pd.to_numeric(self.county_data['2022 Population'], errors='coerce')
+            self.county_data.dropna(subset=['2022 Population'], inplace=True)  
+
 
     def calculate_weighted_unemployment_rate(self, state_abbreviation):
         """

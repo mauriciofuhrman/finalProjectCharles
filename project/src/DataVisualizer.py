@@ -18,16 +18,16 @@ class DataVisualizer:
         """
         Plot unemployment rate as bar chart for each state.
         """
-        state_data = pd.DataFrame([
+        unemployment_rate_per_state = pd.DataFrame([
             {'State': abbr, 'Rate': self.data_processor.calculate_weighted_unemployment_rate(abbr)}
             for abbr in self.data_processor.state_abbrev_mapping
         ])
 
-        state_data.sort_values('Rate', ascending=False, inplace=True)
+        unemployment_rate_per_state.sort_values('Rate', ascending=False, inplace=True)
 
         plt.figure(figsize=(12, 8))
-        colors = plt.cm.viridis(state_data['Rate'] / state_data['Rate'].max())
-        bars = plt.bar(state_data['State'], state_data['Rate'], color=colors)
+        colors = plt.cm.viridis(unemployment_rate_per_state['Rate'] / unemployment_rate_per_state['Rate'].max())
+        bars = plt.bar(unemployment_rate_per_state['State'], unemployment_rate_per_state['Rate'], color=colors)
         plt.xlabel('State')
         plt.ylabel('Unemployment Rate (%)')
         plt.title('Unemployment Rates by State')
@@ -41,48 +41,51 @@ class DataVisualizer:
 
         plt.show()
 
-    def plot_quality_of_life_comparison(self):
+    def plot_quality_of_life_comparison(self, states):
         """
-        Plot a comparison of different Quality of Life metrics for each state.
+        Plot a grouped bar chart comparison of different Quality of Life metrics for specific states.
         """
-        quality_data = self.data_processor.state_data[['state', 'QualityOfLifeTotalScore', 'QualityOfLifeAffordability', 'QualityOfLifeEconomy', 'QualityOfLifeEducationAndHealth', 'QualityOfLifeSafety']].copy()
-        quality_data.set_index('state', inplace=True)
-        quality_data.sort_values('QualityOfLifeTotalScore', ascending=False, inplace=True)
-        
-        # Normalizing the data for comparison
-        quality_normalized = (quality_data - quality_data.min()) / (quality_data.max() - quality_data.min())
+        states = [state.strip() for state in states]
 
-        quality_normalized.plot(kind='bar', stacked=True, figsize=(15, 8))
-        plt.xlabel('State')
-        plt.ylabel('Normalized Quality of Life Scores')
-        plt.title('Comparative Quality of Life Scores by State')
-        plt.legend(title='Metrics')
+        quality_data = self.data_processor.state_data[self.data_processor.state_data['state'].isin(states)].copy()
+
+        metrics_columns = ['QualityOfLifeTotalScore', 'QualityOfLifeAffordability', 'QualityOfLifeEconomy', 
+                        'QualityOfLifeEducationAndHealth', 'QualityOfLifeSafety']
+        
+        quality_data[metrics_columns] = quality_data[metrics_columns].apply(pd.to_numeric, errors='coerce')
+
+        # Normalize the data
+        normalized_data = quality_data[metrics_columns].copy()
+        for metric in metrics_columns:
+            min_val = self.data_processor.state_data[metric].min()
+            max_val = self.data_processor.state_data[metric].max()
+            normalized_data.loc[:, metric] = (quality_data.loc[:, metric] - min_val) / (max_val - min_val)
+
+        plot_data = normalized_data.copy()
+        plot_data['state'] = quality_data['state'].values
+
+        positions = list(range(len(plot_data)))
+        bar_width = 0.15
+
+        _, ax = plt.subplots(figsize=(10, 6))
+
+        for i, metric in enumerate(metrics_columns):
+            ax.bar([p + bar_width * i for p in positions],
+                plot_data[metric],
+                bar_width,
+                label=metric)
+
+        ax.set_xticks([p + bar_width * (len(metrics_columns) - 1) / 2 for p in positions])
+        ax.set_xticklabels(plot_data['state'], rotation=45)
+
+        ax.set_xlabel('State')
+        ax.set_ylabel('Normalized Quality of Life Scores')
+        ax.set_title('Comparative Quality of Life Scores by State')
+        ax.legend(title='Metrics', bbox_to_anchor=(1.05, 1), loc='upper left')
+
         plt.tight_layout()
         plt.show()
 
-    def plot_correlation_unemployment_quality(self):
-        """
-        Plot the correlation between unemployment rates and Quality of Life scores.
-        """
-        unemployment_rates = [self.data_processor.calculate_weighted_unemployment_rate(abbr) for abbr in self.data_processor.state_abbrev_mapping]
-        quality_of_life_scores = self.data_processor.state_data['QualityOfLifeTotalScore'].tolist()
-        
-        paired_data = [(rate, score) for rate, score in zip(unemployment_rates, quality_of_life_scores) if rate is not None]
-        
-        unemployment_rates, quality_of_life_scores = zip(*paired_data)
-        
-        correlation_data = pd.DataFrame({
-            'UnemploymentRate': unemployment_rates,
-            'QualityOfLifeScore': quality_of_life_scores
-        })
-        
-        plt.figure(figsize=(10, 6))
-        plt.scatter(correlation_data['UnemploymentRate'], correlation_data['QualityOfLifeScore'])
-        plt.xlabel('Weighted Unemployment Rate (%)')
-        plt.ylabel('Quality of Life Total Score')
-        plt.title('Correlation between Unemployment Rate and Quality of Life Score')
-        plt.tight_layout()
-        plt.show()
 
 
 

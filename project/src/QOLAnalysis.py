@@ -74,6 +74,31 @@ class QOLAnalysis:
         
         weighted_average = weighted_sum / total_population
         return weighted_average
+    
+    def get_state_happiness_score_based_on_state(self, state_abbreviation):
+        """
+        Calculates the happiness score for a specified state.
+        
+        Parameters:
+            state_abbreviation (str): The state abbreviation for which to calculate the score.
+        
+        Returns:
+            float: The happiness score for the state.
+        """
+        assert state_abbreviation in self.state_abbrev_mapping.keys(), 'Invalid state abbreviation'
+        print(state_abbreviation)
+        state_data = self.state_data[self.state_data['state'] == self.state_abbrev_mapping[state_abbreviation]].copy()
+        if state_data.empty:
+            print("No data available for:", state_abbreviation)
+            return None
+
+
+        happiness_score = state_data['HappiestStatesTotalHappinessScore'].values[0]
+        print("Happiness score for", self.state_abbrev_mapping[state_abbreviation], "is", happiness_score)
+        return happiness_score
+
+    
+
 
     def find_state_with_highest_unemployment(self):
         """
@@ -116,3 +141,6 @@ class QOLAnalysis:
             "state": self.state_abbrev_mapping[min_state],
             "rate": min_rate
         }
+
+qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
+print(qol.get_state_happiness_score_based_on_state('AL'))

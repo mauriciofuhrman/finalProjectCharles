@@ -74,6 +74,25 @@ class QOLAnalysis:
         
         weighted_average = weighted_sum / total_population
         return weighted_average
+
+    def get_all_weighted_unemployment_data(self):
+        """
+        Retrieves weighted unemployment data for all states.
+
+        Returns:
+            DataFrame: A DataFrame containing each state with its weighted average unemployment rate.
+        """
+        weighted_unemployment_rates = []
+
+        for abbr in self.state_abbrev_mapping.keys():
+            weighted_rate = self.calculate_weighted_unemployment_rate(abbr)
+            if weighted_rate is not None:  # Ensuring we only add valid data
+                weighted_unemployment_rates.append({
+                    'state': self.state_abbrev_mapping[abbr],
+                    'UnemploymentRate': weighted_rate
+                })
+
+        return pd.DataFrame(weighted_unemployment_rates)
     
     def get_state_happiness_score_based_on_state(self, state_abbreviation):
         """
@@ -97,7 +116,9 @@ class QOLAnalysis:
         print("Happiness score for", self.state_abbrev_mapping[state_abbreviation], "is", happiness_score)
         return happiness_score
 
-    
+    def get_all_happiness_scores(self):
+        """Retrieve happiness scores for all states."""
+        return self.state_data[['state', 'HappiestStatesTotalHappinessScore']]
 
 
     def find_state_with_highest_unemployment(self):
@@ -143,4 +164,4 @@ class QOLAnalysis:
         }
 
 qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
-print(qol.get_state_happiness_score_based_on_state('AL'))
+

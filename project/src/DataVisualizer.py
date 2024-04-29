@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from QOLAnalysis import QOLAnalysis
 
 class DataVisualizer:
     """
@@ -86,8 +87,38 @@ class DataVisualizer:
         plt.tight_layout()
         plt.show()
 
+    def plot_happiness_colorcoded_bars(self):
+        """Plot color-coded bar charts for happiness scores across states."""
+        happiness_scores = self.data_processor.get_all_happiness_scores()
+        happiness_scores.sort_values('HappiestStatesTotalHappinessScore', ascending=False, inplace=True)
+        
+        plt.figure(figsize=(12, 8))
+        colors = plt.cm.viridis(happiness_scores['HappiestStatesTotalHappinessScore'] / happiness_scores['HappiestStatesTotalHappinessScore'].max())
+        plt.bar(happiness_scores['state'], happiness_scores['HappiestStatesTotalHappinessScore'], color=colors)
+        plt.xlabel('State')
+        plt.ylabel('Happiness Score')
+        plt.title('Happiness Scores by State')
+        plt.xticks(rotation=90)
+        plt.tight_layout()
+        plt.show()
+
+    def plot_happiness_correlation(self, unemployment_data):
+        """Plot correlation between happiness and unemployment."""
+        happiness_scores = self.data_processor.get_all_happiness_scores()
+        merged_data = pd.merge(happiness_scores, unemployment_data, on='state')
+
+        plt.scatter(merged_data['HappiestStatesTotalHappinessScore'], merged_data['UnemploymentRate'])
+        plt.xlabel('Happiness Score')
+        plt.ylabel('Unemployment Rate')
+        plt.title('Happiness vs Unemployment Rate')
+        plt.grid(True)
+        plt.show()
 
 
 
 
 
+qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
+dv = DataVisualizer(qol)
+dv.plot_happiness_colorcoded_bars()
+dv.plot_happiness_correlation(qol.get_all_weighted_unemployment_data())

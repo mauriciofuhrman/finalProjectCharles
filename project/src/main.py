@@ -40,6 +40,10 @@ def main():
                 break  
             else:
                 print("One or more of the states you entered is not a valid state. Please try again.")
+    if input("Would you like to see the happiest states? (y/n): ").strip().lower().startswith('y'):
+        visualizer.plot_happiness_colorcoded_bars()
+    if input("Would you like to see the correlation between unemployment and happiness? (y/n): ").strip().lower().startswith('y'):
+        visualizer.plot_happiness_correlation(data_processor.get_all_weighted_unemployment_data())
 
 if __name__ == '__main__':
     main()

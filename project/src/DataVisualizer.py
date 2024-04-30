@@ -90,17 +90,19 @@ class DataVisualizer:
     def plot_happiness_colorcoded_bars(self):
         """Plot color-coded bar charts for happiness scores across states."""
         happiness_scores = self.data_processor.get_all_happiness_scores()
-        happiness_scores.sort_values('HappiestStatesTotalHappinessScore', ascending=False, inplace=True)
-        
+        sorted_happiness_scores = happiness_scores.sort_values('HappiestStatesTotalHappinessScore', ascending=False)
+
         plt.figure(figsize=(12, 8))
-        colors = plt.cm.viridis(happiness_scores['HappiestStatesTotalHappinessScore'] / happiness_scores['HappiestStatesTotalHappinessScore'].max())
-        plt.bar(happiness_scores['state'], happiness_scores['HappiestStatesTotalHappinessScore'], color=colors)
+        normalized_scores = sorted_happiness_scores['HappiestStatesTotalHappinessScore'] / sorted_happiness_scores['HappiestStatesTotalHappinessScore'].max()
+        colors = plt.cm.viridis(normalized_scores)
+        plt.bar(sorted_happiness_scores['state'], sorted_happiness_scores['HappiestStatesTotalHappinessScore'], color=colors)
         plt.xlabel('State')
         plt.ylabel('Happiness Score')
         plt.title('Happiness Scores by State')
         plt.xticks(rotation=90)
         plt.tight_layout()
         plt.show()
+
 
     def plot_happiness_correlation(self, unemployment_data):
         """Plot correlation between happiness and unemployment."""
@@ -118,7 +120,7 @@ class DataVisualizer:
 
 
 
-qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
-dv = DataVisualizer(qol)
-dv.plot_happiness_colorcoded_bars()
-dv.plot_happiness_correlation(qol.get_all_weighted_unemployment_data())
+# qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
+# dv = DataVisualizer(qol)
+# dv.plot_happiness_colorcoded_bars()
+# dv.plot_happiness_correlation(qol.get_all_weighted_unemployment_data())

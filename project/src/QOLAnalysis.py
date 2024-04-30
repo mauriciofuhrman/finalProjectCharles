@@ -163,5 +163,5 @@ class QOLAnalysis:
             "rate": min_rate
         }
 
-qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
+# qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
 

@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class QOLAnalysis:
     """
     Class to analyze and process QOL and unemployment data by state and county.
@@ -61,19 +62,7 @@ class QOLAnalysis:
         Returns:
             float: The weighted average unemployment rate for the state.
         """
-        assert state_abbreviation in self.state_abbrev_mapping.keys(), 'Invalid state abbreviation'
-        state_counties = self.county_data[self.county_data['LSTATE'] == state_abbreviation].copy()
-        if state_counties.empty:
-            return None
-        
-        state_counties.loc[:, 'Population'] = state_counties['2022 Population'].replace(',', '', regex=True).astype(int)
-        state_counties.loc[:, 'Unemployment'] = state_counties['Unemployment'].str.rstrip('%').astype(float)
-        
-        total_population = state_counties['Population'].sum()
-        weighted_sum = (state_counties['Population'] * state_counties['Unemployment']).sum()
-        
-        weighted_average = weighted_sum / total_population
-        return weighted_average
+        return self.compute_weighted_average(state_abbreviation, 'Unemployment')
 
     def get_all_weighted_unemployment_data(self):
         """
@@ -86,13 +75,14 @@ class QOLAnalysis:
 
         for abbr in self.state_abbrev_mapping.keys():
             weighted_rate = self.calculate_weighted_unemployment_rate(abbr)
-            if weighted_rate is not None:  # Ensuring we only add valid data
+            if weighted_rate is not None:  
                 weighted_unemployment_rates.append({
                     'state': self.state_abbrev_mapping[abbr],
                     'UnemploymentRate': weighted_rate
                 })
 
         return pd.DataFrame(weighted_unemployment_rates)
+    
     
     def get_state_happiness_score_based_on_state(self, state_abbreviation):
         """
@@ -105,7 +95,7 @@ class QOLAnalysis:
             float: The happiness score for the state.
         """
         assert state_abbreviation in self.state_abbrev_mapping.keys(), 'Invalid state abbreviation'
-        print(state_abbreviation)
+        # print(state_abbreviation)
         state_data = self.state_data[self.state_data['state'] == self.state_abbrev_mapping[state_abbreviation]].copy()
         if state_data.empty:
             print("No data available for:", state_abbreviation)
@@ -113,7 +103,7 @@ class QOLAnalysis:
 
 
         happiness_score = state_data['HappiestStatesTotalHappinessScore'].values[0]
-        print("Happiness score for", self.state_abbrev_mapping[state_abbreviation], "is", happiness_score)
+        # print("Happiness score for", self.state_abbrev_mapping[state_abbreviation], "is", happiness_score)
         return happiness_score
 
     def get_all_happiness_scores(self):
@@ -162,6 +152,117 @@ class QOLAnalysis:
             "state": self.state_abbrev_mapping[min_state],
             "rate": min_rate
         }
+    
+    def _convert_to_decimal(self, value):
+        if isinstance(value, str):
+            if '%' in value:
+                new_val = float(value.replace('%', '')) / 100
+                if new_val != -1:
+                    return new_val
+                else:
+                    return pd.NA
+            elif '/' in value:
+                numerator, denominator = value.split('/')
+                new_val = float(numerator) / float(denominator)
+                if new_val != -1:
+                    return new_val
+        if float(value) == -1:
+            return pd.NA
+        return float(value)
+    
+    def compute_weighted_average(self, state_abbreviation, metric, is_dollar=False):
+        """
+        Computes the weighted average of a specific metric for a given state.
+        
+        Parameters:
+            state_abbreviation (str): The state abbreviation for which to calculate the weighted average.
+            metric (str): The metric to calculate the weighted average for.
+        
+        Returns:
+            float: The weighted average of the specified metric for the state.
+        """
+        assert state_abbreviation in self.state_abbrev_mapping.keys(), 'Invalid state abbreviation'
+        state_counties = self.county_data[self.county_data['LSTATE'] == state_abbreviation].copy()
+        if state_counties.empty:
+            return None
+
+        state_counties.loc[:, 'Population'] = state_counties['2022 Population'].replace(',', '', regex=True).astype(int)
+        if is_dollar:
+            state_counties.loc[:, metric] = pd.to_numeric(state_counties[metric].str.replace('$', '', regex=False).str.replace(',', '', regex=False).astype(float), errors='coerce')
+        else:
+            state_counties.loc[:, metric] = pd.to_numeric(state_counties[metric].apply(self._convert_to_decimal), errors='coerce')
+            # print(state_counties[metric])
+
+        
+        total_population = state_counties['Population'].sum()
+        weighted_sum = (state_counties['Population'] * state_counties[metric]).sum()
+        
+        weighted_average = weighted_sum / total_population
+        return weighted_average
+
+    def compute_economy_averages(self):
+        """
+        Computes the weighted averages of economy-related metrics for each state.
+        
+        Returns:
+            DataFrame: A DataFrame containing each state with its weighted averages for economy-related metrics.
+        """
+        economy_metrics = ['Cost of Living', '2022 Median Income']
+        economy_averages = []
+
+        for abbr in self.state_abbrev_mapping.keys():
+            state_averages = {'state': self.state_abbrev_mapping[abbr]}
+            for metric in economy_metrics:
+                weighted_average = self.compute_weighted_average(abbr, metric, True)
+                if weighted_average is not None:
+                    state_averages[metric] = weighted_average
+            economy_averages.append(state_averages)
+
+        return pd.DataFrame(economy_averages)
+
+    def compute_health_averages(self):
+        """
+        Computes the weighted averages of health-related metrics for each state.
+        
+        Returns:
+            DataFrame: A DataFrame containing each state with its weighted averages for health-related metrics.
+        """
+        health_metrics = ['WaterQualityVPV', '%CvgCityPark']
+        health_averages = []
+
+        for abbr in self.state_abbrev_mapping.keys():
+            state_averages = {'state': self.state_abbrev_mapping[abbr]}
+            for metric in health_metrics:
+                weighted_average = self.compute_weighted_average(abbr, metric)
+                if weighted_average is not None:
+                    state_averages[metric] = weighted_average
+            health_averages.append(state_averages)
+
+        return pd.DataFrame(health_averages)
+
+    def compute_safety_averages(self):
+        """
+        Computes the weighted averages of safety-related metrics for each state.
+        
+        Returns:
+            DataFrame: A DataFrame containing each state with its weighted averages for safety-related metrics.
+        """
+        safety_metric = '2016 Crime Rate'
+        safety_averages = []
+
+        for abbr in self.state_abbrev_mapping.keys():
+            weighted_average = self.compute_weighted_average(abbr, safety_metric)
+            if weighted_average is not None:
+                safety_averages.append({
+                    'state': self.state_abbrev_mapping[abbr],
+                    safety_metric: weighted_average
+                })
+
+        return pd.DataFrame(safety_averages)
 
 # qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
-
+# print(qol.compute_weighted_average('FL', 'Unemployment'))
+# print(qol.compute_economy_averages())
+# print(qol.compute_weighted_average('FL', 'WaterQualityVPV'))
+# print(qol.compute_health_averages())
+# print(qol.compute_safety_averages())

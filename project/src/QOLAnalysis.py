@@ -170,7 +170,7 @@ class QOLAnalysis:
             return pd.NA
         return float(value)
     
-    def compute_weighted_average(self, state_abbreviation, metric, is_dollar=False):
+    def compute_weighted_average(self, state_abbreviation : str, metric, is_dollar=False):
         """
         Computes the weighted average of a specific metric for a given state.
         

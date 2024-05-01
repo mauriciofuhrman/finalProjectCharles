@@ -1,0 +1,14 @@
+answers:
+  highest_unemployment: "y"
+  lowest_unemployment: "y"
+  view_unemployment_rates_graph: "y"
+  view_happiest_states: "y"
+  view_unemployment_happiness_correlation: "y"
+  view_economic_metrics: "y"
+  view_health_metrics: "y"
+  view_safety_metrics: "y"
+  view_quality_of_life_comparison: "y"
+  states_to_compare:
+    - "Florida"
+    - "California"
+    - "Wyoming"

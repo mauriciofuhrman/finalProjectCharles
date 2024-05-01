@@ -7,7 +7,7 @@ class DataVisualizer:
     """
     Class to handle visualization of Quality of Life and unemployment data.
     """
-    def __init__(self, data_processor):
+    def __init__(self, data_processor, fig_size=(20,10)):
         """
         Initializes the DataVisualizer with a QualityOfLifeData instance.
 
@@ -15,8 +15,9 @@ class DataVisualizer:
             data_processor (QualityOfLifeData): The data processing instance that loads and computes data.
         """
         self.data_processor = data_processor
+        self.fig_size = fig_size
 
-    def plot_unemployment_rates(self):
+    def plot_unemployment_rates(self, fig_size=None):
         """
         Plot weighted unemployment rate as a bar chart for each state.
         """
@@ -30,7 +31,10 @@ class DataVisualizer:
         print("Unemployment Rates per State:")
         print(unemployment_rate_per_state)
 
-        plt.figure(figsize=(20, 10))
+        if fig_size is not None:
+            plt.figure(figsize=fig_size)
+        else:
+            plt.figure(figsize=self.fig_size)
         colors = plt.cm.viridis(unemployment_rate_per_state['Rate'] / unemployment_rate_per_state['Rate'].max())
         bars = plt.bar(unemployment_rate_per_state['State'], unemployment_rate_per_state['Rate'], color=colors)
         plt.xlabel('State')
@@ -45,7 +49,7 @@ class DataVisualizer:
 
         plt.show()
 
-    def plot_quality_of_life_comparison(self, states):
+    def plot_quality_of_life_comparison(self, states, fig_size=None):
         """
         Plot a grouped bar chart comparison of different Quality of Life metrics for specific states.
         """
@@ -70,7 +74,11 @@ class DataVisualizer:
         positions = list(range(len(plot_data)))
         bar_width = 0.15
 
-        _, ax = plt.subplots(figsize=(10, 6))
+        if fig_size is not None:
+            _, ax = plt.subplots(figsize=fig_size)
+        else:
+           _, ax = plt.subplots(figsize=self.fig_size)
+
 
         for i, metric in enumerate(metrics_columns):
             ax.bar([p + bar_width * i for p in positions],
@@ -84,17 +92,21 @@ class DataVisualizer:
         ax.set_xlabel('State')
         ax.set_ylabel('Normalized Quality of Life Scores')
         ax.set_title('Comparative Quality of Life Scores by State')
-        ax.legend(title='Metrics', bbox_to_anchor=(1.05, 1), loc='upper left')
+        ax.legend(title='Metrics', bbox_to_anchor=(1, 1), loc='upper left', fontsize='small')
 
-        plt.tight_layout()
+        plt.tight_layout(rect=[0, 0, 0.85, 1])  
+
         plt.show()
 
-    def plot_happiness_colorcoded_bars(self):
+    def plot_happiness_colorcoded_bars(self, fig_size=None):
         """Plot color-coded bar charts for happiness scores across states."""
         happiness_scores = self.data_processor.get_all_happiness_scores()
         sorted_happiness_scores = happiness_scores.sort_values('HappiestStatesTotalHappinessScore', ascending=False)
 
-        plt.figure(figsize=(12, 8))
+        if fig_size is not None:
+            plt.figure(figsize=fig_size)
+        else:
+            plt.figure(figsize=self.fig_size)
         normalized_scores = sorted_happiness_scores['HappiestStatesTotalHappinessScore'] / sorted_happiness_scores['HappiestStatesTotalHappinessScore'].max()
         colors = plt.cm.viridis(normalized_scores)
         plt.bar(sorted_happiness_scores['state'], sorted_happiness_scores['HappiestStatesTotalHappinessScore'], color=colors)
@@ -118,12 +130,15 @@ class DataVisualizer:
         plt.grid(True)
         plt.show()
 
-    def plot_economy_averages(self):
+    def plot_economy_averages(self, fig_size=None):
         """
         Plots the weighted averages of economy-related metrics for each state from a DataFrame.
         """
         df = self.data_processor.compute_economy_averages()
-        _, ax = plt.subplots(figsize=(18, 7))  
+        if fig_size is not None:
+            _, ax = plt.subplots(figsize=fig_size)
+        else:
+           _, ax = plt.subplots(figsize=self.fig_size)
         df.plot(x='state', y=['Cost of Living', '2022 Median Income'], kind='bar', ax=ax)
         ax.set_title('Economy-Related Metrics by State ($)')
         ax.set_xlabel('State')
@@ -134,11 +149,14 @@ class DataVisualizer:
         plt.tight_layout()
         plt.show()
     
-    def plot_health_averages(self):
+    def plot_health_averages(self, fig_size = None):
         """
         Plots the weighted averages of health-related metrics for each state from a DataFrame.
         """
-        _, ax = plt.subplots(figsize=(14, 7))
+        if fig_size is not None:
+            _, ax = plt.subplots(figsize=fig_size)
+        else:
+           _, ax = plt.subplots(figsize=self.fig_size)
         # Removed %CvgCityPark from the plot as there is little data available (only very few states have this metric)
         self.data_processor.compute_health_averages().plot(x='state', y='WaterQualityVPV', kind='bar', ax=ax, color='blue')
         ax.set_title('Health-Related Metrics by State (Lower = Better)')
@@ -149,14 +167,17 @@ class DataVisualizer:
         plt.tight_layout()
         plt.show()
 
-    def plot_safety_averages(self):
+    def plot_safety_averages(self, fig_size = None):
         """
         Plots the weighted averages of safety-related metrics for each state from a DataFrame.
         
         Parameters:
             df (DataFrame): DataFrame containing each state with its weighted averages for safety-related metrics.
         """
-        _, ax = plt.subplots(figsize=(14, 7))
+        if fig_size is not None:
+            _, ax = plt.subplots(figsize=fig_size)
+        else:
+           _, ax = plt.subplots(figsize=self.fig_size)
         self.data_processor.compute_safety_averages().plot(x='state', y=['2016 Crime Rate'], kind='bar', ax=ax, color='red')
         ax.set_title('Safety-Related Metrics by State')
         ax.set_xlabel('State')

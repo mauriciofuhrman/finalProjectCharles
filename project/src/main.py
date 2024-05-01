@@ -1,7 +1,9 @@
 from QOLAnalysis import QOLAnalysis
 from DataVisualizer import DataVisualizer
+import yaml
 
-
+with open('../config/config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
 
 def get_valid_y_or_n_answer(prompt):
     """
@@ -45,6 +47,13 @@ def get_valid_state_guess(prompt, states):
                 return guess
             print("Please enter the full name of a valid state, not an abbreviation.")
 
+def get_answer(question_key_in_config, prompt):
+    if question_key_in_config in config['answers']:
+        return config['answers'][question_key_in_config]
+    else:
+        return get_valid_y_or_n_answer(prompt)
+
+
 def main():
 
     input("Hi, my name is Mauricio Fuhrman, and I am using Python to analyze and interpret the United States' Quality of Life and Unemployment. Press Enter to continue.")
@@ -52,52 +61,57 @@ def main():
     data_processor = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
     visualizer = DataVisualizer(data_processor)
 
-    answer = get_valid_y_or_n_answer("Would you like to find out which state has the highest unemployment rate? (y/n): ")
+    answer = get_answer("highest_unemployment", "Would you like to find out which state has the highest unemployment rate? (y/n): ")
     if answer == 'y':
         guess = get_valid_state_guess("First guess which state has the highest unemployment rate. Write your guess and press Enter: ", data_processor.state_abbrev_mapping.values())
         state_with_highest_unemployment = data_processor.find_state_with_highest_unemployment()
+        value = round(state_with_highest_unemployment['rate']*100,2)
         if guess.lower() == state_with_highest_unemployment['state'].lower():
-            print("You guessed correctly! They have an unemployment rate of", state_with_highest_unemployment['rate'], "%")
+            print("You guessed correctly! They have an unemployment rate of", value, "%")
         else:
-            print("Incorrect. The state with the highest unemployment rate is", state_with_highest_unemployment['state'], "with a rate of", round(state_with_highest_unemployment['rate']*100,2), "%")
+            print("Incorrect. The state with the highest unemployment rate is", state_with_highest_unemployment['state'], "with a rate of", value, "%")
 
-    answer = get_valid_y_or_n_answer("Would you like to find out which state has the lowest unemployment rate? (y/n): ")
+    answer = get_answer("lowest_unemployment", "Would you like to find out which state has the lowest unemployment rate? (y/n): ")
     if answer == 'y':
         guess = get_valid_state_guess("First guess which state has the lowest unemployment rate. Write your guess and press Enter: ", data_processor.state_abbrev_mapping.values())
         state_with_lowest_unemployment = data_processor.find_state_with_lowest_unemployment()
+        value = round(state_with_lowest_unemployment['rate']*100,2)
         if guess.lower() == state_with_lowest_unemployment['state'].lower():
-            print("You guessed correctly! They have an unemployment rate of", state_with_lowest_unemployment['rate'], "%")
+            print("You guessed correctly! They have an unemployment rate of", value, "%")
         else:
-            print("Incorrect. The state with the lowest unemployment rate is", state_with_lowest_unemployment['state'], "with a rate of", round(state_with_lowest_unemployment['rate']*100,2), "%")
+            print("Incorrect. The state with the lowest unemployment rate is", state_with_lowest_unemployment['state'], "with a rate of", value, "%")
     
-    answer = get_valid_y_or_n_answer("Would you like to view the Unemployment Rates by State graph? (y/n): ")
+    answer = get_answer("view_unemployment_rates_graph","Would you like to view the Unemployment Rates by State graph? (y/n): ")
     if answer == 'y':
         visualizer.plot_unemployment_rates()
 
-    answer = get_valid_y_or_n_answer("Would you like to see the happiest states? (y/n): ")
+    answer = get_answer("view_happiest_states", "Would you like to see the happiest states? (y/n): ")
     if answer == 'y':
         visualizer.plot_happiness_colorcoded_bars()
 
-    answer = get_valid_y_or_n_answer("Would you like to see the correlation between unemployment and happiness? (y/n): ")
+    answer = get_answer("view_unemployment_happiness_correlation", "Would you like to see the correlation between unemployment and happiness? (y/n): ")
     if answer == 'y':
         visualizer.plot_happiness_correlation()
 
-    answer = get_valid_y_or_n_answer("Would you like to see how economic metrics, such as cost of living and median income, differs per state? (y/n): ")
+    answer = get_answer("view_economic_metrics", "Would you like to see how economic metrics, such as cost of living and median income, differs per state? (y/n): ")
     if answer == 'y':
         visualizer.plot_economy_averages()
 
-    answer = get_valid_y_or_n_answer("Would you like to see how health metrics, such as water quality, differs per state? (y/n): ")
+    answer = get_answer("view_health_metrics","Would you like to see how health metrics, such as water quality, differs per state? (y/n): ")
     if answer == 'y':
         visualizer.plot_health_averages()
     
-    answer = get_valid_y_or_n_answer("Would you like to see how safety metrics, such as crime rate, differs per state? (y/n): ")
+    answer = get_answer("view_safety_metrics","Would you like to see how safety metrics, such as crime rate, differs per state? (y/n): ")
     if answer == 'y':
         visualizer.plot_safety_averages()
 
-    answer = get_valid_y_or_n_answer("Now that you have gotten a grasp of different factors across the states, such as unemployment, safety, happiness, etc., would you like to view a comparison between the Quality of Life Comparison in different States? (y/n): ")
+    answer = get_answer("view_quality_of_life_comparison", "Now that you have gotten a grasp of different factors across the states, such as unemployment, safety, happiness, etc., would you like to view a comparison between the Quality of Life Comparison in different States? (y/n): ")
     if answer == 'y':
         while True:
-            states = input("Please enter the states you want to compare separated by commas (such as: 'California, Texas, New York'): ").strip().split(',')
+            if 'states_to_compare' in config['answers']:
+                states = config['answers']['states_to_compare']
+            else:
+                states = input("Please enter the states you want to compare separated by commas (such as: 'California, Texas, New York'): ").strip().split(',')
             states = [state.strip().title() for state in states]
             all_possible_states = [state for state in data_processor.state_abbrev_mapping.values()]
             all_are_states = all(state in all_possible_states for state in states)

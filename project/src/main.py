@@ -70,11 +70,32 @@ def main():
         else:
             print("Incorrect. The state with the lowest unemployment rate is", state_with_lowest_unemployment['state'], "with a rate of", round(state_with_lowest_unemployment['rate']*100,2), "%")
     
-    if input("Would you like to view the Unemployment Rates by State graph? (y/n): ").strip().lower().startswith('y'):
+    answer = get_valid_y_or_n_answer("Would you like to view the Unemployment Rates by State graph? (y/n): ")
+    if answer == 'y':
         visualizer.plot_unemployment_rates()
 
+    answer = get_valid_y_or_n_answer("Would you like to see the happiest states? (y/n): ")
+    if answer == 'y':
+        visualizer.plot_happiness_colorcoded_bars()
 
-    if input("Would you like to view the Quality of Life Comparison graph? (y/n): ").strip().lower().startswith('y'):
+    answer = get_valid_y_or_n_answer("Would you like to see the correlation between unemployment and happiness? (y/n): ")
+    if answer == 'y':
+        visualizer.plot_happiness_correlation()
+
+    answer = get_valid_y_or_n_answer("Would you like to see how economic metrics, such as cost of living and median income, differs per state? (y/n): ")
+    if answer == 'y':
+        visualizer.plot_economy_averages()
+
+    answer = get_valid_y_or_n_answer("Would you like to see how health metrics, such as water quality, differs per state? (y/n): ")
+    if answer == 'y':
+        visualizer.plot_health_averages()
+    
+    answer = get_valid_y_or_n_answer("Would you like to see how safety metrics, such as crime rate, differs per state? (y/n): ")
+    if answer == 'y':
+        visualizer.plot_safety_averages()
+
+    answer = get_valid_y_or_n_answer("Now that you have gotten a grasp of different factors across the states, such as unemployment, safety, happiness, etc., would you like to view a comparison between the Quality of Life Comparison in different States? (y/n): ")
+    if answer == 'y':
         while True:
             states = input("Please enter the states you want to compare separated by commas (such as: 'California, Texas, New York'): ").strip().split(',')
             states = [state.strip().title() for state in states]
@@ -86,10 +107,8 @@ def main():
                 break  
             else:
                 print("One or more of the states you entered is not a valid state. Please try again.")
-    if input("Would you like to see the happiest states? (y/n): ").strip().lower().startswith('y'):
-        visualizer.plot_happiness_colorcoded_bars()
-    if input("Would you like to see the correlation between unemployment and happiness? (y/n): ").strip().lower().startswith('y'):
-        visualizer.plot_happiness_correlation()
+    
+
 
 if __name__ == '__main__':
     main()

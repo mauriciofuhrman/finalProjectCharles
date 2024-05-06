@@ -1,4 +1,10 @@
 import pandas as pd
+from pydantic import BaseModel
+from typing import Union, Optional
+
+class UnemploymentRateInfo(BaseModel):
+    state: str
+    rate: float
 
 
 class QOLAnalysis:
@@ -6,7 +12,7 @@ class QOLAnalysis:
     Class to analyze and process QOL and unemployment data by state and county.
     """
     
-    def __init__(self, state_data_path, county_data_path):
+    def __init__(self, state_data_path : str, county_data_path : str) -> None:
         """
         Initializes the QOL data with the correct paths.
         
@@ -36,7 +42,7 @@ class QOLAnalysis:
         self.county_data = None
         self.load_data()
         
-    def load_data(self):
+    def load_data(self) -> None:
         """
         Loads state and county data from CSV files into pandas DataFrames.
         """
@@ -52,7 +58,7 @@ class QOLAnalysis:
             self.county_data.dropna(subset=['2022 Population'], inplace=True)  
 
 
-    def calculate_weighted_unemployment_rate(self, state_abbreviation):
+    def calculate_weighted_unemployment_rate(self, state_abbreviation : str) -> float:
         """
         Calculates the weighted average unemployment rate for a specified state.
         
@@ -64,7 +70,7 @@ class QOLAnalysis:
         """
         return self.compute_weighted_average(state_abbreviation, 'Unemployment')
 
-    def get_all_weighted_unemployment_data(self):
+    def get_all_weighted_unemployment_data(self) -> pd.DataFrame:
         """
         Retrieves weighted unemployment data for all states.
 
@@ -84,7 +90,7 @@ class QOLAnalysis:
         return pd.DataFrame(weighted_unemployment_rates)
     
     
-    def get_state_happiness_score_based_on_state(self, state_abbreviation):
+    def get_state_happiness_score_based_on_state(self, state_abbreviation : str) -> float:
         """
         Calculates the happiness score for a specified state.
         
@@ -106,12 +112,12 @@ class QOLAnalysis:
         # print("Happiness score for", self.state_abbrev_mapping[state_abbreviation], "is", happiness_score)
         return happiness_score
 
-    def get_all_happiness_scores(self):
+    def get_all_happiness_scores(self) -> None:
         """Retrieve happiness scores for all states."""
         return self.state_data[['state', 'HappiestStatesTotalHappinessScore']]
 
 
-    def find_state_with_highest_unemployment(self):
+    def find_state_with_highest_unemployment(self) -> UnemploymentRateInfo:
         """
         Identifies the state with the highest weighted unemployment rate.
         
@@ -132,7 +138,7 @@ class QOLAnalysis:
             "rate": max_rate
         }
     
-    def find_state_with_lowest_unemployment(self):
+    def find_state_with_lowest_unemployment(self) -> UnemploymentRateInfo:
         """
         Identifies the state with the lowest weighted unemployment rate.
         
@@ -153,24 +159,39 @@ class QOLAnalysis:
             "rate": min_rate
         }
     
-    def _convert_to_decimal(self, value):
+    def _convert_to_decimal(self, value : Union[str,float]) -> Optional[float]:
+        """
+        Converts a given string or float to a decimal representation. If the input is a string
+        containing a percentage (e.g., '50%'), it converts it to a decimal (e.g., 0.5). If the 
+        input is a fraction (e.g., '1/2'), it calculates the decimal equivalent. The function 
+        returns None if the input value is '-1' or if the conversion results in -1, indicating 
+        missing or invalid data.
+
+        Parameters:
+            value (Union[str, float]): The value to convert, which can either be a numerical
+                                    string potentially containing '%' or '/', or a direct float.
+
+        Returns:
+            Optional[float]: The decimal equivalent of the input as a float, or None if the input 
+                            is '-1' or results in an invalid calculation.
+        """
         if isinstance(value, str):
             if '%' in value:
                 new_val = float(value.replace('%', '')) / 100
                 if new_val != -1:
                     return new_val
                 else:
-                    return pd.NA
+                    return None
             elif '/' in value:
                 numerator, denominator = value.split('/')
                 new_val = float(numerator) / float(denominator)
                 if new_val != -1:
                     return new_val
         if float(value) == -1:
-            return pd.NA
+            return None
         return float(value)
     
-    def compute_weighted_average(self, state_abbreviation : str, metric, is_dollar=False):
+    def compute_weighted_average(self, state_abbreviation : str, metric : str, is_dollar : bool = False) -> float:
         """
         Computes the weighted average of a specific metric for a given state.
         
@@ -200,7 +221,7 @@ class QOLAnalysis:
         weighted_average = weighted_sum / total_population
         return weighted_average
 
-    def compute_economy_averages(self):
+    def compute_economy_averages(self) -> pd.DataFrame:
         """
         Computes the weighted averages of economy-related metrics for each state.
         
@@ -220,7 +241,7 @@ class QOLAnalysis:
 
         return pd.DataFrame(economy_averages)
 
-    def compute_health_averages(self):
+    def compute_health_averages(self) -> pd.DataFrame:
         """
         Computes the weighted averages of health-related metrics for each state.
         
@@ -240,7 +261,7 @@ class QOLAnalysis:
 
         return pd.DataFrame(health_averages)
 
-    def compute_safety_averages(self):
+    def compute_safety_averages(self) -> pd.DataFrame:
         """
         Computes the weighted averages of safety-related metrics for each state.
         

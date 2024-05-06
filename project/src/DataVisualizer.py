@@ -1,25 +1,31 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from QOLAnalysis import QOLAnalysis
+from typing import Tuple, List
 
 
 class DataVisualizer:
     """
     Class to handle visualization of Quality of Life and unemployment data.
     """
-    def __init__(self, data_processor, fig_size=(20,10)):
+
+    def __init__(self, data_processor: QOLAnalysis, fig_size: Tuple[int, int] = (20, 10)) -> None:
         """
-        Initializes the DataVisualizer with a QualityOfLifeData instance.
+        Initializes the DataVisualizer with a QOLAnalysis instance.
 
         Parameters:
-            data_processor (QualityOfLifeData): The data processing instance that loads and computes data.
+            data_processor (QOLAnalysis): The data processing instance that loads and computes data.
+            fig_size (Tuple[int, int], optional): A tuple representing the width and height of the figure. Defaults to (20, 10).
         """
         self.data_processor = data_processor
         self.fig_size = fig_size
 
-    def plot_unemployment_rates(self, fig_size=None):
+    def plot_unemployment_rates(self, fig_size: Tuple[int, int] = None) -> None:
         """
-        Plot weighted unemployment rate as a bar chart for each state.
+        Plots weighted unemployment rates as a bar chart for each state.
+
+        Parameters:
+            fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
         unemployment_rate_per_state = pd.DataFrame([
             {'State': self.data_processor.state_abbrev_mapping[abbr], 'Rate': self.data_processor.calculate_weighted_unemployment_rate(abbr)}
@@ -49,9 +55,13 @@ class DataVisualizer:
 
         plt.show()
 
-    def plot_quality_of_life_comparison(self, states, fig_size=None):
+    def plot_quality_of_life_comparison(self, states : List[str], fig_size : Tuple[int, int] = None) -> None:
         """
-        Plot a grouped bar chart comparison of different Quality of Life metrics for specific states.
+        Plots a grouped bar chart comparison of different Quality of Life metrics for specific states.
+
+        Parameters:
+            states (List[str]): List of state names to be compared.
+            fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
         states = [state.strip() for state in states]
 
@@ -98,8 +108,14 @@ class DataVisualizer:
 
         plt.show()
 
-    def plot_happiness_colorcoded_bars(self, fig_size=None):
-        """Plot color-coded bar charts for happiness scores across states."""
+    def plot_happiness_colorcoded_bars(self, fig_size: Tuple[int, int] = None) -> None:
+        """
+        Plots color-coded bar charts for happiness scores across states. The colors of the bars
+        represent the relative happiness scores normalized to the highest score.
+
+        Parameters:
+            fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
+        """
         happiness_scores = self.data_processor.get_all_happiness_scores()
         sorted_happiness_scores = happiness_scores.sort_values('HappiestStatesTotalHappinessScore', ascending=False)
 
@@ -118,8 +134,14 @@ class DataVisualizer:
         plt.show()
 
 
-    def plot_happiness_correlation(self):
-        """Plot correlation between happiness and unemployment."""
+    def plot_happiness_correlation(self) -> None:
+        """
+        Plots a scatter plot to illustrate the correlation between happiness scores and unemployment rates
+        across states. This can help visualize any relationship between overall happiness and economic factors.
+
+        Returns:
+            None: This method only generates a plot and does not return any data.
+        """
         happiness_scores = self.data_processor.get_all_happiness_scores()
         merged_data = pd.merge(happiness_scores, self.data_processor.get_all_weighted_unemployment_data(), on='state')
 
@@ -132,7 +154,11 @@ class DataVisualizer:
 
     def plot_economy_averages(self, fig_size=None):
         """
-        Plots the weighted averages of economy-related metrics for each state from a DataFrame.
+        Plots the weighted averages of economy-related metrics, such as cost of living and median income,
+        for each state. This visualization helps compare economic conditions across different states.
+
+        Parameters:
+            fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
         df = self.data_processor.compute_economy_averages()
         if fig_size is not None:
@@ -149,9 +175,13 @@ class DataVisualizer:
         plt.tight_layout()
         plt.show()
     
-    def plot_health_averages(self, fig_size = None):
+    def plot_health_averages(self, fig_size: Tuple[int, int] = None) -> None:
         """
-        Plots the weighted averages of health-related metrics for each state from a DataFrame.
+        Plots the weighted averages of health-related metrics for each state. The plot focuses on metrics
+        such as water quality, visualizing health standards across states.
+
+        Parameters:
+            fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
         if fig_size is not None:
             _, ax = plt.subplots(figsize=fig_size)
@@ -167,12 +197,13 @@ class DataVisualizer:
         plt.tight_layout()
         plt.show()
 
-    def plot_safety_averages(self, fig_size = None):
+    def plot_safety_averages(self, fig_size : Tuple[int, int] = None) -> None:
         """
-        Plots the weighted averages of safety-related metrics for each state from a DataFrame.
-        
+        Plots the weighted averages of safety-related metrics for each state. Metrics such as crime rates
+        are visualized to provide insights into the safety conditions of different states.
+
         Parameters:
-            df (DataFrame): DataFrame containing each state with its weighted averages for safety-related metrics.
+            fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
         if fig_size is not None:
             _, ax = plt.subplots(figsize=fig_size)

@@ -5,7 +5,7 @@ import yaml
 with open('../config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
 
-def get_valid_y_or_n_answer(prompt):
+def get_valid_y_or_n_answer(prompt : str) -> str:
     """
     Asks the user a yes or no question and returns the answer.
 
@@ -26,16 +26,16 @@ def get_valid_y_or_n_answer(prompt):
             return 'n'
         print("Please enter 'y' for yes or 'n' for no.")
 
-def get_valid_state_guess(prompt, states):
+def get_valid_state_guess(prompt, states : str) -> str:
         """
         Asks the user for a state.
 
         This function will repeatedly prompt the user until they
-        enter an actual value for a state.
+        enter actual values for states.
 
         Parameters:
             prompt (str): The question to prompt the user with.
-            states (str[]): The values of states. Will pass in the state_abbrev_mapping values.
+            states (str): The values of states. Will pass in the state_abbrev_mapping values.
 
         Returns:
             str: the state selected.
@@ -47,7 +47,7 @@ def get_valid_state_guess(prompt, states):
                 return guess
             print("Please enter the full name of a valid state, not an abbreviation.")
 
-def get_answer(question_key_in_config, prompt):
+def get_answer(question_key_in_config : str, prompt : str) -> str:
     if question_key_in_config in config['answers']:
         return config['answers'][question_key_in_config]
     else:

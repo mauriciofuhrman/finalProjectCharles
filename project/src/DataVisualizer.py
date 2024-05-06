@@ -38,8 +38,8 @@ class DataVisualizer:
         unemployment_rate_per_state.dropna(inplace=True)  # Remove states with missing data
         unemployment_rate_per_state.sort_values('Rate', ascending=False, inplace=True)
 
-        print("Unemployment Rates per State:")
-        print(unemployment_rate_per_state)
+        # print("Unemployment Rates per State:")
+        # print(unemployment_rate_per_state)
 
         if fig_size is not None:
             plt.figure(figsize=fig_size)

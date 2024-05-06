@@ -1,9 +1,16 @@
 from QOLAnalysis import QOLAnalysis
 from DataVisualizer import DataVisualizer
 import yaml
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    filename='../tests/main.log', 
+                    filemode='w',  
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 with open('../config/config.yaml', 'r') as file:
     config = yaml.safe_load(file)
+
 
 def get_valid_y_or_n_answer(prompt : str) -> str:
     """

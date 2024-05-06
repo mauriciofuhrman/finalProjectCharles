@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from QOLAnalysis import QOLAnalysis
 from typing import Tuple, List
+import logging
 
 
 class DataVisualizer:
@@ -19,6 +20,8 @@ class DataVisualizer:
         """
         self.data_processor = data_processor
         self.fig_size = fig_size
+        self.logger = logging.getLogger(__name__)
+        self.logger.info(f'DataVisualizer initialized with fig_size: {fig_size}')
 
     def plot_unemployment_rates(self, fig_size: Tuple[int, int] = None) -> None:
         """
@@ -27,6 +30,7 @@ class DataVisualizer:
         Parameters:
             fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
+        self.logger.info('Starting to plot unemployment rates...')
         unemployment_rate_per_state = pd.DataFrame([
             {'State': self.data_processor.state_abbrev_mapping[abbr], 'Rate': self.data_processor.calculate_weighted_unemployment_rate(abbr)}
             for abbr in self.data_processor.state_abbrev_mapping
@@ -44,7 +48,7 @@ class DataVisualizer:
         colors = plt.cm.viridis(unemployment_rate_per_state['Rate'] / unemployment_rate_per_state['Rate'].max())
         bars = plt.bar(unemployment_rate_per_state['State'], unemployment_rate_per_state['Rate'], color=colors)
         plt.xlabel('State')
-        plt.ylabel('Weighted Unemployment Rate (%)')
+        plt.ylabel('Weighted Unemployment Rate')
         plt.title('Weighted Unemployment Rates by State')
         plt.xticks(rotation=90)
         plt.tight_layout()
@@ -54,6 +58,7 @@ class DataVisualizer:
             plt.text(bar.get_x() + bar.get_width()/2, yval + 0.1, f'{yval:.2f}', va='bottom', ha='center', color='black', rotation=90)
 
         plt.show()
+        self.logger.info('Unemployment rates plotted successfully.')
 
     def plot_quality_of_life_comparison(self, states : List[str], fig_size : Tuple[int, int] = None) -> None:
         """
@@ -63,7 +68,7 @@ class DataVisualizer:
             states (List[str]): List of state names to be compared.
             fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
-        states = [state.strip() for state in states]
+        self.logger.info(f'Plotting quality of life comparison for states: {states}')
 
         quality_data = self.data_processor.state_data[self.data_processor.state_data['state'].isin(states)].copy()
 
@@ -107,6 +112,7 @@ class DataVisualizer:
         plt.tight_layout(rect=[0, 0, 0.85, 1])  
 
         plt.show()
+        self.logger.info('Quality of life comparison plotted successfully.')
 
     def plot_happiness_colorcoded_bars(self, fig_size: Tuple[int, int] = None) -> None:
         """
@@ -116,6 +122,7 @@ class DataVisualizer:
         Parameters:
             fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
+        self.logger.info('Plotting happiness color-coded bars...')
         happiness_scores = self.data_processor.get_all_happiness_scores()
         sorted_happiness_scores = happiness_scores.sort_values('HappiestStatesTotalHappinessScore', ascending=False)
 
@@ -132,6 +139,7 @@ class DataVisualizer:
         plt.xticks(rotation=90)
         plt.tight_layout()
         plt.show()
+        self.logger.info('Happiness color-coded bars plotted successfully.')
 
 
     def plot_happiness_correlation(self) -> None:
@@ -142,6 +150,7 @@ class DataVisualizer:
         Returns:
             None: This method only generates a plot and does not return any data.
         """
+        self.logger.info('Plotting happiness correlation...')
         happiness_scores = self.data_processor.get_all_happiness_scores()
         merged_data = pd.merge(happiness_scores, self.data_processor.get_all_weighted_unemployment_data(), on='state')
 
@@ -151,6 +160,7 @@ class DataVisualizer:
         plt.title('Happiness vs Unemployment Rate')
         plt.grid(True)
         plt.show()
+        self.logger.info('Happiness correlation plotted successfully.')
 
     def plot_economy_averages(self, fig_size=None):
         """
@@ -160,6 +170,7 @@ class DataVisualizer:
         Parameters:
             fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
+        self.logger.info('Plotting economy averages...')
         df = self.data_processor.compute_economy_averages()
         if fig_size is not None:
             _, ax = plt.subplots(figsize=fig_size)
@@ -174,6 +185,7 @@ class DataVisualizer:
         ax.tick_params(axis='x', labelsize=8)  
         plt.tight_layout()
         plt.show()
+        self.logger.info('Economy averages plotted successfully.')
     
     def plot_health_averages(self, fig_size: Tuple[int, int] = None) -> None:
         """
@@ -183,6 +195,7 @@ class DataVisualizer:
         Parameters:
             fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
+        self.logger.info('Plotting health averages...')
         if fig_size is not None:
             _, ax = plt.subplots(figsize=fig_size)
         else:
@@ -196,6 +209,7 @@ class DataVisualizer:
         ax.tick_params(axis='x', labelsize=8)  
         plt.tight_layout()
         plt.show()
+        self.logger.info('Health averages plotted successfully.')
 
     def plot_safety_averages(self, fig_size : Tuple[int, int] = None) -> None:
         """
@@ -205,6 +219,7 @@ class DataVisualizer:
         Parameters:
             fig_size (Optional[Tuple[int, int]]): Size of the figure to override the default size.
         """
+        self.logger.info('Plotting safety averages...')
         if fig_size is not None:
             _, ax = plt.subplots(figsize=fig_size)
         else:
@@ -216,11 +231,13 @@ class DataVisualizer:
         plt.xticks(rotation=90, ha='center')  
         ax.tick_params(axis='x', labelsize=8)  
         plt.tight_layout()
-        plt.show()               
+        plt.show()  
+        self.logger.info('Safety averages plotted successfully.')             
 
 
 # qol = QOLAnalysis('../data/qualityoflifescores.csv', '../data/QOL_County_Level.csv')
 # dv = DataVisualizer(qol)
+# dv.plot_quality_of_life_comparison(['California', 'New York'])
 # dv.plot_happiness_colorcoded_bars()
 # dv.plot_happiness_correlation(qol.get_all_weighted_unemployment_data())
 # dv.plot_economy_averages()
